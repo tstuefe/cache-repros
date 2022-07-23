@@ -3,7 +3,7 @@
 ## Find out your topology
 
 - lscpu (reports total L1/L2/L3 sizes, not per core)
-- https://www.open-mpi.org/projects/hwloc (very nice, can be installed via normal Debian repos), reports cache sizes per core
+- https://www.open-mpi.org/projects/hwloc (GUI-based, install via apt-get), reports cache sizes per core
 
 ## Preface: profiling
 
@@ -36,9 +36,9 @@ executes program and shows total cache misses and references
 
 executes program, measures total cache misses and references, and shows code locations.
 
-Note: Skew is an issue here, at least on my machine, its bad. Code locations seem often to be off-by-(1..3). Out-of-order execution hurts here. With a bit of luck and logic counters are still attributable to the right instruction though.
+Note: Skew can be an issue. Code locations seem often to be off-by-(1..3). Out-of-order execution effects. 
 
-(todo evaluate: Intel PT ?)
+(todo: investigate)
 
 `perf mem record -a <prog>`
 
@@ -46,29 +46,23 @@ Note: Skew is an issue here, at least on my machine, its bad. Code locations see
 
 ### AMD uProf
 
-Free Tool. Can be downloaded.
+Free Tool. GUI-based.
 
-Install deb package. Comes with graphical frontend. Needs kernel.perf_event_paranoid too.
+Download and install deb package. Comes with graphical frontend. Also needs kernel.perf_event_paranoid.
 
-
-
+Pretty intuitive. IBS gives far more precise code locations.
 
 ### Documentations
 
-Red Hat has good documentation:
-https://developers.redhat.com/blog/2014/03/10/determining-whether-an-application-has-poor-cache-performance-2
-https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/monitoring_and_managing_system_status_and_performance/profiling-memory-accesses-with-perf-mem_monitoring-and-managing-system-status-and-performance
-
-Very good:
-https://www.reddit.com/r/Amd/comments/9quk0c/amd_zen_performance_counters_review_low_level/
+- https://developers.redhat.com/blog/2014/03/10/determining-whether-an-application-has-poor-cache-performance-2
+- https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/monitoring_and_managing_system_status_and_performance/profiling-memory-accesses-with-perf-mem_monitoring-and-managing-system-status-and-performance
+- https://www.reddit.com/r/Amd/comments/9quk0c/amd_zen_performance_counters_review_low_level/
 
 ## Demos
 
 ### hyper
 
-Test demonstrates hyper-alignment effects (what happens if one naively aligns large structures along 2^N boundaries,
-with N > 6 (64 bytes being the typical cacheline size of most CPUs). Theory says with N=7 you would only use every second cache line, N=8 every fourth and
-so forth.
+Demonstrates hyper-alignment effects (aligning large structures along 2^N boundaries, with N > 6 (assuming 64 bytes cacheline size).
 
 build:
 	make hyper
@@ -80,12 +74,3 @@ Usage:
 	e.g. 	hyper 64
 		hyper 256 (would be overaligned, cache misses should rise drastically)
 		hyper 256 +- 64 (should use cache more efficiently)
-
-
-Execute withW
-perf stat -e ache-references,cache-misses hyper <stride>
-//
-// stride=64: optimal, every access fills a cacheline
-// stride=128 or 256: hyper-aligned, number of cache misses raises dramatically since we only use 1/2 or 1/4 of the cache
-// stride=256+64: again, optimal
-
