@@ -11,7 +11,7 @@
 
 To run without sudo:
 
-sudo sysctl -w kernel.perf_event_paranoid=X
+`sysctl -w kernel.perf_event_paranoid=X`
 
 perf_event_paranoid:
 
