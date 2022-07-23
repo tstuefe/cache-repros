@@ -1,5 +1,3 @@
-# Cache experiments
-
 ## Find out your topology
 
 - lscpu (reports total L1/L2/L3 sizes, not per core)
